@@ -2954,11 +2954,10 @@ class NaturalLanguageGenerator {
 
     return Math.min(0.95, confidence);
   }
-}
 
-/**
- * Вспомогательные методы для профилирования пользователей
- */
+  /**
+   * Вспомогательные методы для профилирования пользователей
+   */
   extractInteractionPatterns(userInput) {
     const patterns = [];
     const inputLower = userInput.toLowerCase();

@@ -186,17 +186,16 @@ class SemanticIntegrationLayer {
         ...context
       };
 
-    console.log(`🔍 [SEMANTIC-INTEGRATION] Запуск анализа: "${userInput}"`);
+      console.log(`🔍 [SEMANTIC-INTEGRATION] Запуск анализа: "${userInput}"`);
 
-    const analysisResults = {
-      metaSemantics: null,
-      emotionalContext: null,
-      userProfile: null,
-      basicAnalysis: null,
-      errors: []
-    };
+      const analysisResults = {
+        metaSemantics: null,
+        emotionalContext: null,
+        userProfile: null,
+        basicAnalysis: null,
+        errors: []
+      };
 
-    try {
       // ЭТАП 1: Мета-семантический анализ (критичный)
       try {
         const shouldUseMeta = this.shouldUseMetaSemantics(userInput, context);
