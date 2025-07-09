@@ -243,6 +243,49 @@ class SemanticIntegrationLayer {
         }
       }
 
+      // ЭТАП 5: Внешний поиск для знаниевых запросов
+      if (needsExternalKnowledge) {
+        try {
+          console.log(`🔍 [SEMANTIC-INTEGRATION] Активирован внешний поиск для знаниевого запроса`);
+          
+          // Вызов внешнего поиска через web-search-provider (динамический импорт)
+          const webSearchProvider = await import('./web-search-provider.js');
+          const searchResults = await webSearchProvider.search(userInput, {
+            searchType: 'comprehensive',
+            language: 'ru',
+            maxResults: 5
+          });
+          
+          if (searchResults && searchResults.length > 0) {
+            console.log(`✅ [SEMANTIC-INTEGRATION] Получены результаты внешнего поиска: ${searchResults.length} результатов`);
+            
+            // Обогащаем результат внешними данными
+            if (analysisResults.metaSemantics) {
+              analysisResults.metaSemantics.externalKnowledge = searchResults;
+            } else if (analysisResults.basicAnalysis) {
+              analysisResults.basicAnalysis.externalKnowledge = searchResults;
+            } else {
+              // Создаем специальный результат для внешнего поиска
+              analysisResults.externalKnowledgeResult = {
+                intent: 'knowledge_request',
+                confidence: 0.8,
+                category: 'external_knowledge',
+                query_type: 'knowledge_request',
+                externalKnowledge: searchResults,
+                semantic_analysis: {
+                  query_type: 'knowledge_request',
+                  dialog_category: 'external_knowledge',
+                  semantic_cluster: { name: 'knowledge_request', confidence: 80 }
+                }
+              };
+            }
+          }
+        } catch (error) {
+          console.error('⚠️ [SEMANTIC-INTEGRATION] Ошибка внешнего поиска:', error.message);
+          analysisResults.errors.push('external-search');
+        }
+      }
+
       // ✅ ИСПРАВЛЕНО: ВСЕГДА возвращаем семантические результаты
       return this.selectBestResult(analysisResults, userInput, enhancedContext);
 
@@ -274,7 +317,17 @@ class SemanticIntegrationLayer {
   selectBestResult(analysisResults, userInput, context) {
     console.log(`🎯 [SEMANTIC-INTEGRATION] Выбираем лучший результат для: "${userInput.substring(0, 50)}"`);
 
-    // Приоритет: мета-семантика > эмоциональный анализ > базовый анализ
+    // Приоритет: внешний поиск > мета-семантика > базовый анализ
+    if (analysisResults.externalKnowledgeResult) {
+      console.log('✅ [SEMANTIC-INTEGRATION] Используем результат внешнего поиска');
+      return {
+        shouldUseSemantic: true,
+        reason: 'external_knowledge_search',
+        semanticResult: analysisResults.externalKnowledgeResult,
+        confidence: 0.9
+      };
+    }
+
     if (analysisResults.metaSemantics) {
       console.log('✅ [SEMANTIC-INTEGRATION] Используем мета-семантический результат');
       return {
