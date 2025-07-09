@@ -3002,6 +3002,7 @@ class NaturalLanguageGenerator {
            knowledgeDomains.some(domain => lowerInput.includes(domain)) ||
            lowerInput.includes('?');
   }
+}
 
 // Создаем глобальный экземпляр
 const naturalLanguageGenerator = new NaturalLanguageGenerator();
